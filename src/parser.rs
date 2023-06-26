@@ -1,6 +1,5 @@
 use rayon::prelude::*;
-use std::fs::read_to_string;
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::str::FromStr;
 use std::{fs::File, path::Path};
 
@@ -25,14 +24,10 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     out_file.push_str(".dat");
 
     // Open .sos file
-    let display = inpath.display();
+    let infile = File::open(inpath)?;
+    let reader = BufReader::new(infile.try_clone()?);
 
-    let file_contents = match read_to_string(inpath) {
-        Ok(contents) => contents,
-        Err(err) => {
-            panic!("Failed to read file: {}, err: {}", display, err);
-        }
-    };
+    // Clone file to avoid reading all contents into memory
 
     // let origone = [0.0, 0.0]; Not needed
     let scale = 0.01;
@@ -45,7 +40,9 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     let mut d_no = 0.0;
 
-    for line in file_contents.lines() {
+    for line in reader.lines() {
+        let line = line?;
+        println!("{}", line);
         if line.contains("DYBDE") {
             if let Some(stripped_line) = line.splitn(2, ' ').nth(1) {
                 if let Ok(parsed_d_no) = f64::from_str(stripped_line) {
@@ -57,9 +54,9 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 continue;
             }
 
-            inner(&file_contents, d_no, mm, &mut x, &mut y, &mut d);
+            mm += inner(infile.try_clone()?, d_no, &mut x, &mut y, &mut d);
         } else if line.contains("Kystkontur") {
-            inner(&file_contents, dm, mm, &mut x, &mut y, &mut d);
+            mm += inner(infile.try_clone()?, dm, &mut x, &mut y, &mut d);
         }
     }
 
@@ -92,19 +89,23 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
 /// Inner loop for the parser
 fn inner(
-    file_contents: &String,
+    f: File,
     val: f64,
-    mut mm: usize,
+    // mut mm: usize,
     x: &mut Vec<f64>,
     y: &mut Vec<f64>,
     d: &mut Vec<f64>,
-) {
-    for line_coast in file_contents.lines() {
-        if line_coast.trim_start().starts_with('.') {
+) -> usize {
+    let mut mm = 0;
+    let reader = BufReader::new(f);
+
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if line.trim_start().starts_with('.') {
             break;
         }
 
-        let n_o: Vec<&str> = line_coast.trim().split_whitespace().collect();
+        let n_o: Vec<&str> = line.trim().split_whitespace().collect();
 
         if n_o.len() < 2 {
             continue;
@@ -117,4 +118,5 @@ fn inner(
             d.push(val);
         }
     }
+    return mm;
 }
