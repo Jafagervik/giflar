@@ -10,6 +10,7 @@ use anyhow::Result;
 pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     // Filename for out file is the last part of input name
     let inpath = Path::new(&in_file);
+    println!("{:?}", inpath);
 
     // name of output file will be the same as input file
     let mut out_file: String = inpath
@@ -44,7 +45,9 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     let mut d_no = 0.0;
 
-    for line in file_contents.lines() {
+    let all: Vec<String> = file_contents.lines().map(String::from).collect();
+
+    for line in &all {
         if line.contains("DYBDE") {
             if let Some(stripped_line) = line.splitn(2, ' ').nth(1) {
                 if let Ok(parsed_d_no) = f64::from_str(stripped_line) {
@@ -56,12 +59,14 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 continue;
             }
 
-            for line in file_contents.lines() {
-                if line.trim_start().starts_with('.') {
+            // println!("{:?}", line);
+            for l in file_contents.lines() {
+                println!("{:?}", l);
+                if l.trim_start().starts_with('.') {
                     break;
                 }
 
-                let input = line.trim();
+                let input = l.trim();
                 let n_o: Vec<&str> = input.split_whitespace().collect();
 
                 if n_o.len() < 2 {
@@ -78,12 +83,13 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
         } else if line.contains("Kystkontur") {
             let d_ky = dm;
 
-            for line in file_contents.lines() {
-                if line.trim_start().starts_with('.') {
+            for l2 in file_contents.lines() {
+                println!("{:?}", line);
+                if l2.trim_start().starts_with('.') {
                     break;
                 }
 
-                let input = line.trim();
+                let input = l2.trim();
                 let n_o: Vec<&str> = input.split_whitespace().collect();
 
                 if n_o.len() < 2 {
@@ -91,6 +97,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 }
 
                 mm += 1;
+                println!("{:?}", n_o);
                 if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
                     x.push(x_coord);
                     y.push(y_coord);
@@ -99,6 +106,8 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
             }
         }
     }
+
+    println!("{:?}", x);
 
     let mut nxyd = vec![[0.0; 4]; mm];
 
@@ -110,6 +119,8 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     }
 
     let out_path = Path::new(&out_dir).join(out_file);
+
+    println!("{:?}", out_path);
 
     // Writing to output file
     let mut geo_file = match File::create(out_path) {
