@@ -2,6 +2,15 @@
 name = "giflar"
 version = "0.0.1"
 edition = "2021"
+authors = ["Joergen Aleksander Fagervik <jorgenafagervik@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+description = "Sosi -> Grib file parser"
+repository = "https://github.com/Jafagervik/giflar.git"
+
+keywords = ["sosi","grib",  "grib2", "parser", "cli"]
+categories = ["science"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
