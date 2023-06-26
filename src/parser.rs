@@ -34,7 +34,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
         }
     };
 
-    let origone = [0.0, 0.0];
+    // let origone = [0.0, 0.0]; Not needed
     let scale = 0.01;
     let mut mm = 0;
     let dm = 1.4;
@@ -65,14 +65,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     let nxyd: Vec<[f64; 4]> = (0..mm)
         .into_par_iter()
-        .map(|n| {
-            [
-                (n + 1) as f64,
-                x[n] * scale + origone[1],
-                y[n] * scale + origone[0],
-                d[n],
-            ]
-        })
+        .map(|n| [(n + 1) as f64, x[n] * scale, y[n] * scale, d[n]])
         .collect();
 
     let out_path = Path::new(&out_dir).join(out_file);
@@ -87,7 +80,6 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     };
 
     // Writing to output file
-    // TODO: parallelize?
     for row in &nxyd {
         let line = format!("{:.6} {:.6} {:.6}\n", row[1], row[2], row[3]);
         if let Err(e) = out_file.write_all(line.as_bytes()) {
@@ -101,7 +93,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 /// Inner loop for the parser
 fn inner(
     file_contents: &String,
-    da: f64,
+    val: f64,
     mut mm: usize,
     x: &mut Vec<f64>,
     y: &mut Vec<f64>,
@@ -122,7 +114,7 @@ fn inner(
         if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
             x.push(x_coord);
             y.push(y_coord);
-            d.push(da);
+            d.push(val);
         }
     }
 }
