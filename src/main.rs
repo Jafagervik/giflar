@@ -23,12 +23,12 @@ struct Args {
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let filename = args.inpath;
+    let inpath = args.inpath;
     let outdir = args.outdir;
 
     // Check if file can be parsed
-    if filename.contains(".sos") {
-        match parse(filename, outdir) {
+    if inpath.contains(".sos") {
+        match parse(inpath, outdir) {
             Ok(_) => {
                 println!("Finished parsing file");
                 return Ok(());
@@ -41,7 +41,7 @@ fn main() -> Result<()> {
     let mut parsed = 0;
     let mut tot_sosi_files = 0;
 
-    match fs::read_dir(filename.clone()) {
+    match fs::read_dir(inpath.clone()) {
         Err(e) => panic!("Error: {}", e),
         Ok(files) => {
             for f in files {
@@ -64,7 +64,7 @@ fn main() -> Result<()> {
 
     println!(
         "Finished parsing {} out of {} .sos files in directory {}",
-        parsed, tot_sosi_files, filename
+        parsed, tot_sosi_files, inpath
     );
 
     Ok(())
