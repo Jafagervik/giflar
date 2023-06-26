@@ -17,6 +17,7 @@ categories = ["science"]
 [dependencies]
 anyhow = "1.0.71"
 clap = { version = "4.3.8", features = ["derive"] }
+rayon = "1.7.0"
 
 [profile.dev]
 opt-level = 1 

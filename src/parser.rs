@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::fs::read_to_string;
 use std::io::Write;
 use std::str::FromStr;
@@ -58,6 +59,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 continue;
             }
 
+            // SAME
             for line_depth in file_contents.lines() {
                 if line_depth.trim_start().starts_with('.') {
                     break;
@@ -78,8 +80,9 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 }
             }
         } else if line.contains("Kystkontur") {
-            let d_ky = dm;
+            // let d_ky = dm;
 
+            // SAME
             for line_coast in file_contents.lines() {
                 if line_coast.trim_start().starts_with('.') {
                     break;
@@ -96,20 +99,32 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
                     x.push(x_coord);
                     y.push(y_coord);
-                    d.push(d_ky);
+                    d.push(dm);
                 }
             }
         }
     }
 
-    let mut nxyd = vec![[0.0; 4]; mm];
+    // let mut nxyd = vec![[0.0; 4]; mm];
+    //
+    // for m in 0..mm {
+    //     nxyd[m][0] = (m + 1) as f64;
+    //     nxyd[m][1] = x[m] * scale + origone[1];
+    //     nxyd[m][2] = y[m] * scale + origone[0];
+    //     nxyd[m][3] = d[m];
+    // }
 
-    for m in 0..mm {
-        nxyd[m][0] = (m + 1) as f64;
-        nxyd[m][1] = x[m] * scale + origone[1];
-        nxyd[m][2] = y[m] * scale + origone[0];
-        nxyd[m][3] = d[m];
-    }
+    let nxyd: Vec<[f64; 4]> = (0..mm)
+        .into_par_iter()
+        .map(|m| {
+            [
+                (m + 1) as f64,
+                x[m] * scale + origone[1],
+                y[m] * scale + origone[0],
+                d[m],
+            ]
+        })
+        .collect();
 
     let out_path = Path::new(&out_dir).join(out_file);
 
