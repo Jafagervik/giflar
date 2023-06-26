@@ -10,7 +10,7 @@ description = "Sosi -> Dat file parser"
 repository = "https://github.com/Jafagervik/giflar.git"
 
 keywords = ["sosi","grib", "grib2", "parser", "cli"]
-categories = ["science", "cli"]
+categories = ["science", "command-line-utilities", "compression", "parsing-implementations" ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
