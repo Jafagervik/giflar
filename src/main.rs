@@ -3,7 +3,7 @@ mod parser;
 use std::{fs, panic};
 
 use anyhow::Result;
-use parser::*;
+use parser::parse;
 
 use clap::Parser;
 

@@ -65,12 +65,12 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     let nxyd: Vec<[f64; 4]> = (0..mm)
         .into_par_iter()
-        .map(|m| {
+        .map(|n| {
             [
-                (m + 1) as f64,
-                x[m] * scale + origone[1],
-                y[m] * scale + origone[0],
-                d[m],
+                (n + 1) as f64,
+                x[n] * scale + origone[1],
+                y[n] * scale + origone[0],
+                d[n],
             ]
         })
         .collect();
