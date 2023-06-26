@@ -62,7 +62,6 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 if line_depth.trim_start().starts_with('.') {
                     break;
                 }
-                println!("{:?}", line_depth);
 
                 let input = line_depth.trim();
                 let n_o: Vec<&str> = input.split_whitespace().collect();
@@ -85,7 +84,6 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 if line_coast.trim_start().starts_with('.') {
                     break;
                 }
-                println!("{:?}", line_coast);
 
                 let input = line_coast.trim();
                 let n_o: Vec<&str> = input.split_whitespace().collect();
