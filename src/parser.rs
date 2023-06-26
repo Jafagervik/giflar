@@ -22,6 +22,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
         .nth(0)
         .unwrap()
         .to_owned();
+
     out_file.push_str(".dat");
 
     // Open .sos file
@@ -35,7 +36,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     };
 
     let origone = [0.0, 0.0];
-    let enhet = 0.01;
+    let scale = 0.01;
     let mut mm = 0;
     let dm = 1.4;
 
@@ -61,6 +62,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 if line_depth.trim_start().starts_with('.') {
                     break;
                 }
+                println!("{:?}", line_depth);
 
                 let input = line_depth.trim();
                 let n_o: Vec<&str> = input.split_whitespace().collect();
@@ -83,6 +85,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 if line_coast.trim_start().starts_with('.') {
                     break;
                 }
+                println!("{:?}", line_coast);
 
                 let input = line_coast.trim();
                 let n_o: Vec<&str> = input.split_whitespace().collect();
@@ -105,8 +108,8 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     for m in 0..mm {
         nxyd[m][0] = (m + 1) as f64;
-        nxyd[m][1] = x[m] * enhet + origone[1];
-        nxyd[m][2] = y[m] * enhet + origone[0];
+        nxyd[m][1] = x[m] * scale + origone[1];
+        nxyd[m][2] = y[m] * scale + origone[0];
         nxyd[m][3] = d[m];
     }
 
