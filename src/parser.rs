@@ -1,45 +1,56 @@
+use std::io::Read;
 use std::{fs::File, path::Path};
 
 use anyhow::Result;
 
-/// Read input from file
-fn prepare_inp_data(infile: String) -> Result<String> {
-    let path = Path::new(&infile);
-    let display = path.display();
+/// function parses a sos file to a .dat file
+pub fn parse(in_file: String, out_dir: String) -> Result<()> {
+    // Filename for out file is the last part of input name
+    let inpath = Path::new(&in_file);
 
-    let mut file = match File::open(&path) {
+    // name of output file will be the same as input file
+    let out_file: String = inpath
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .to_string()
+        .split(".")
+        .nth(0)
+        .unwrap()
+        .to_owned();
+
+    let display = inpath.display();
+
+    // Open .sos file
+    let mut file = match File::open(&inpath) {
         Err(e) => panic!("Could not open {}: {}", display, e),
         Ok(file) => file,
     };
 
+    // TODO: Too big of a string to store on heap?
     let mut s = String::new();
-    match file.read_to_string(&mut s) {
-        Err(why) => panic!("couldn't read {}: {}", display, why),
-        res => res,
-    }
-}
+    let data: String = match file.read_to_string(&mut s) {
+        Err(why) => panic!("Couldn't read {}: {}", display, why),
+        Ok(_) => s,
+    };
 
-fn prepare_out_data(out_file: String) -> Result<File> {
-    let path = Path::new(&format!("./files/{out_file}"));
+    // ============================================
+    // Out data
+    // ============================================
+
+    let path = Path::new(&out_dir).join(out_file);
     let display = path.display();
 
-    match File::create(&path) {
+    let mut f = match File::create(&path) {
         Err(why) => panic!("Couldn't create {}: {}", display, why),
-        Ok(file) => Ok(file),
-    }
-}
-
-/// function parses a sos file to a .dat file
-pub fn parse(in_file: String, out_file: String) -> Result<()> {
-    let data = match prepare_inp_data(in_file) {
-        Ok(d) => d,
-        Err(e) => panic!("{}", e),
+        Ok(file) => file,
     };
 
-    let file = match prepare_out_data(out_file) {
-        Ok(f) => f,
-        Err(e) => panic!("{}", e),
-    };
+    for l in data.lines() {}
 
     Ok(())
 }
+
+fn a() {}
+
+fn b() {}
