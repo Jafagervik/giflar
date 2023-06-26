@@ -25,7 +25,7 @@ fn main() -> Result<()> {
     let outdir = args.outdir;
 
     // Check if files can be parsed
-    if filename.split(".").last().unwrap() != "sos" {
+    if filename.split('.').last().unwrap() != "sos" {
         panic!("Incorrect file extension. Input file should be *.sos");
     }
 
