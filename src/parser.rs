@@ -1,15 +1,18 @@
-use std::io::Read;
+use std::fs::read_to_string;
+use std::io::Write;
+use std::str::FromStr;
 use std::{fs::File, path::Path};
 
 use anyhow::Result;
 
 /// function parses a sos file to a .dat file
+#[warn(unused_assignments)]
 pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     // Filename for out file is the last part of input name
     let inpath = Path::new(&in_file);
 
     // name of output file will be the same as input file
-    let out_file: String = inpath
+    let mut out_file: String = inpath
         .file_name()
         .unwrap()
         .to_string_lossy()
@@ -18,39 +21,111 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
         .nth(0)
         .unwrap()
         .to_owned();
-
-    let display = inpath.display();
+    out_file.push_str(".dat");
 
     // Open .sos file
-    let mut file = match File::open(&inpath) {
-        Err(e) => panic!("Could not open {}: {}", display, e),
+    let display = inpath.display();
+
+    let file_contents = match read_to_string(inpath) {
+        Ok(contents) => contents,
+        Err(err) => {
+            panic!("Failed to read file: {}, err: {}", display, err);
+        }
+    };
+
+    let origone = [0.0, 0.0];
+    let enhet = 0.01;
+    let mut mm = 0;
+    let dm = 1.4;
+
+    let mut x = Vec::new();
+    let mut y = Vec::new();
+    let mut d = Vec::new();
+
+    let mut d_no = 0.0;
+
+    for line in file_contents.lines() {
+        if line.contains("DYBDE") {
+            if let Some(stripped_line) = line.splitn(2, ' ').nth(1) {
+                if let Ok(parsed_d_no) = f64::from_str(stripped_line) {
+                    d_no = parsed_d_no;
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            for line in file_contents.lines() {
+                if line.trim_start().starts_with('.') {
+                    break;
+                }
+
+                let input = line.trim();
+                let n_o: Vec<&str> = input.split_whitespace().collect();
+
+                if n_o.len() < 2 {
+                    continue;
+                }
+
+                mm += 1;
+                if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
+                    x.push(x_coord);
+                    y.push(y_coord);
+                    d.push(d_no);
+                }
+            }
+        } else if line.contains("Kystkontur") {
+            let d_ky = dm;
+
+            for line in file_contents.lines() {
+                if line.trim_start().starts_with('.') {
+                    break;
+                }
+
+                let input = line.trim();
+                let n_o: Vec<&str> = input.split_whitespace().collect();
+
+                if n_o.len() < 2 {
+                    continue;
+                }
+
+                mm += 1;
+                if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
+                    x.push(x_coord);
+                    y.push(y_coord);
+                    d.push(d_ky);
+                }
+            }
+        }
+    }
+
+    let np = mm;
+    let mut nxyd = vec![[0.0; 4]; np];
+
+    for m in 0..np {
+        nxyd[m][0] = (m + 1) as f64;
+        nxyd[m][1] = x[m] * enhet + origone[1];
+        nxyd[m][2] = y[m] * enhet + origone[0];
+        nxyd[m][3] = d[m];
+    }
+
+    let out_path = Path::new(&out_dir).join(out_file);
+
+    // Writing to output file
+    let mut geo_file = match File::create(out_path) {
         Ok(file) => file,
+        Err(err) => {
+            panic!("Failed to create file: {}", err);
+        }
     };
 
-    // TODO: Too big of a string to store on heap?
-    let mut s = String::new();
-    let data: String = match file.read_to_string(&mut s) {
-        Err(why) => panic!("Couldn't read {}: {}", display, why),
-        Ok(_) => s,
-    };
-
-    // ============================================
-    // Out data
-    // ============================================
-
-    let path = Path::new(&out_dir).join(out_file);
-    let display = path.display();
-
-    let mut f = match File::create(&path) {
-        Err(why) => panic!("Couldn't create {}: {}", display, why),
-        Ok(file) => file,
-    };
-
-    for l in data.lines() {}
+    for row in &nxyd {
+        let line = format!("{:.6} {:.6} {:.6}\n", row[1], row[2], row[3]);
+        if let Err(err) = geo_file.write_all(line.as_bytes()) {
+            panic!("Failed to write to file: {}", err);
+        }
+    }
 
     Ok(())
 }
-
-fn a() {}
-
-fn b() {}
