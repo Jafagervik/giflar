@@ -6,10 +6,8 @@ use std::{fs::File, path::Path};
 
 use anyhow::Result;
 
-/// function parses a sos file to a .dat file
 #[warn(unused_assignments)]
 pub fn parse(in_file: String, out_dir: String) -> Result<()> {
-    // Filename for out file is the last part of input name
     let inpath = Path::new(&in_file);
     println!("{:?}", inpath);
 
@@ -59,60 +57,11 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
                 continue;
             }
 
-            // SAME
-            for line_depth in file_contents.lines() {
-                if line_depth.trim_start().starts_with('.') {
-                    break;
-                }
-
-                let input = line_depth.trim();
-                let n_o: Vec<&str> = input.split_whitespace().collect();
-
-                if n_o.len() < 2 {
-                    continue;
-                }
-
-                mm += 1;
-                if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
-                    x.push(x_coord);
-                    y.push(y_coord);
-                    d.push(d_no);
-                }
-            }
+            inner(&file_contents, d_no, mm, &mut x, &mut y, &mut d);
         } else if line.contains("Kystkontur") {
-            // let d_ky = dm;
-
-            // SAME
-            for line_coast in file_contents.lines() {
-                if line_coast.trim_start().starts_with('.') {
-                    break;
-                }
-
-                let input = line_coast.trim();
-                let n_o: Vec<&str> = input.split_whitespace().collect();
-
-                if n_o.len() < 2 {
-                    continue;
-                }
-
-                mm += 1;
-                if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
-                    x.push(x_coord);
-                    y.push(y_coord);
-                    d.push(dm);
-                }
-            }
+            inner(&file_contents, dm, mm, &mut x, &mut y, &mut d);
         }
     }
-
-    // let mut nxyd = vec![[0.0; 4]; mm];
-    //
-    // for m in 0..mm {
-    //     nxyd[m][0] = (m + 1) as f64;
-    //     nxyd[m][1] = x[m] * scale + origone[1];
-    //     nxyd[m][2] = y[m] * scale + origone[0];
-    //     nxyd[m][3] = d[m];
-    // }
 
     let nxyd: Vec<[f64; 4]> = (0..mm)
         .into_par_iter()
@@ -130,20 +79,50 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     println!("{:?}", out_path);
 
-    // Writing to output file
-    let mut geo_file = match File::create(out_path) {
+    let mut out_file = match File::create(out_path) {
         Ok(file) => file,
-        Err(err) => {
-            panic!("Failed to create file: {}", err);
+        Err(e) => {
+            panic!("Failed to create file: {}", e);
         }
     };
 
+    // Writing to output file
+    // TODO: parallelize?
     for row in &nxyd {
         let line = format!("{:.6} {:.6} {:.6}\n", row[1], row[2], row[3]);
-        if let Err(err) = geo_file.write_all(line.as_bytes()) {
-            panic!("Failed to write to file: {}", err);
+        if let Err(e) = out_file.write_all(line.as_bytes()) {
+            panic!("Failed to write to file: {}", e);
         }
     }
 
     Ok(())
+}
+
+/// Inner loop for the parser
+fn inner(
+    file_contents: &String,
+    da: f64,
+    mut mm: usize,
+    x: &mut Vec<f64>,
+    y: &mut Vec<f64>,
+    d: &mut Vec<f64>,
+) {
+    for line_coast in file_contents.lines() {
+        if line_coast.trim_start().starts_with('.') {
+            break;
+        }
+
+        let n_o: Vec<&str> = line_coast.trim().split_whitespace().collect();
+
+        if n_o.len() < 2 {
+            continue;
+        }
+
+        mm += 1;
+        if let (Ok(x_coord), Ok(y_coord)) = (f64::from_str(n_o[1]), f64::from_str(n_o[0])) {
+            x.push(x_coord);
+            y.push(y_coord);
+            d.push(da);
+        }
+    }
 }
