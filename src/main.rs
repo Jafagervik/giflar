@@ -26,7 +26,7 @@ fn main() -> Result<()> {
 
     // Check if files can be parsed
     if filename.split(".").last().unwrap() != ".sos" {
-        panic!("Incorrect file extensions. Input file should be *.sos");
+        panic!("Incorrect file extension. Input file should be *.sos");
     }
 
     // Parse file

@@ -100,10 +100,9 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
         }
     }
 
-    let np = mm;
-    let mut nxyd = vec![[0.0; 4]; np];
+    let mut nxyd = vec![[0.0; 4]; mm];
 
-    for m in 0..np {
+    for m in 0..mm {
         nxyd[m][0] = (m + 1) as f64;
         nxyd[m][1] = x[m] * enhet + origone[1];
         nxyd[m][2] = y[m] * enhet + origone[0];
