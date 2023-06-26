@@ -8,7 +8,6 @@ use anyhow::Result;
 #[warn(unused_assignments)]
 pub fn parse(in_file: String, out_dir: String) -> Result<()> {
     let inpath = Path::new(&in_file);
-    println!("{:?}", inpath);
 
     // name of output file will be the same as input file
     let mut out_file: String = inpath
@@ -20,14 +19,11 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
         .nth(0)
         .unwrap()
         .to_owned();
-
     out_file.push_str(".dat");
 
     // Open .sos file
     let infile = File::open(inpath)?;
     let reader = BufReader::new(infile.try_clone()?);
-
-    // Clone file to avoid reading all contents into memory
 
     // let origone = [0.0, 0.0]; Not needed
     let scale = 0.01;
@@ -42,7 +38,6 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     for line in reader.lines() {
         let line = line?;
-        println!("{}", line);
         if line.contains("DYBDE") {
             if let Some(stripped_line) = line.splitn(2, ' ').nth(1) {
                 if let Ok(parsed_d_no) = f64::from_str(stripped_line) {
@@ -67,8 +62,6 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 
     let out_path = Path::new(&out_dir).join(out_file);
 
-    println!("{:?}", out_path);
-
     let mut out_file = match File::create(out_path) {
         Ok(file) => file,
         Err(e) => {
@@ -88,14 +81,7 @@ pub fn parse(in_file: String, out_dir: String) -> Result<()> {
 }
 
 /// Inner loop for the parser
-fn inner(
-    f: File,
-    val: f64,
-    // mut mm: usize,
-    x: &mut Vec<f64>,
-    y: &mut Vec<f64>,
-    d: &mut Vec<f64>,
-) -> usize {
+fn inner(f: File, val: f64, x: &mut Vec<f64>, y: &mut Vec<f64>, d: &mut Vec<f64>) -> usize {
     let mut mm = 0;
     let reader = BufReader::new(f);
 
