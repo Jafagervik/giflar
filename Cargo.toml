@@ -1,16 +1,16 @@
 [package]
 name = "giflar"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 authors = ["Joergen Aleksander Fagervik <jorgenafagervik@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
-description = "Sosi -> Grib file parser"
+description = "Sosi -> Dat file parser"
 repository = "https://github.com/Jafagervik/giflar.git"
 
-keywords = ["sosi","grib",  "grib2", "parser", "cli"]
-categories = ["science"]
+keywords = ["sosi","grib", "grib2", "parser", "cli"]
+categories = ["science", "cli"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
